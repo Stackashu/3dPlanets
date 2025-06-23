@@ -81,7 +81,11 @@ const PlanetScene = () => {
     const scrollThrottleDelay = 1500;
     let scrollCount = 0;
 
-    const handleWheel = (event) => {
+    // Touch event variables
+    let touchStartY = null;
+    let touchEndY = null;
+
+    const triggerScroll = (direction) => {
       const currentTime = Date.now();
       if (currentTime - lastScrollTime < scrollThrottleDelay) return;
 
@@ -89,24 +93,22 @@ const PlanetScene = () => {
       if (isAnimating) return;
 
       lastScrollTime = currentTime;
-      const direction = event.deltaY > 0 ? 1 : -1;
-      
       const nextScrollCount = scrollCount + direction;
 
       if (nextScrollCount < 0 || nextScrollCount >= textures.length) {
         return;
       }
-      
+
       scrollCount = nextScrollCount;
-      
+
       const headings = document.querySelectorAll(".heading");
-      
+
       gsap.to(headings, {
         duration: 1,
         y: `${scrollCount * -120}%`,
         ease: "power2.inout"
       });
-    
+
       gsap.to(spheres.rotation, {
         duration: 1.5,
         y: scrollCount * -(Math.PI / 2),
@@ -114,7 +116,36 @@ const PlanetScene = () => {
       });
     };
 
+    const handleWheel = (event) => {
+      const direction = event.deltaY > 0 ? 1 : -1;
+      triggerScroll(direction);
+    };
+
+    // Touch event handlers for mobile
+    const handleTouchStart = (event) => {
+      if (event.touches && event.touches.length === 1) {
+        touchStartY = event.touches[0].clientY;
+      }
+    };
+
+    const handleTouchEnd = (event) => {
+      if (touchStartY === null) return;
+      // Use changedTouches for touchend
+      const endY = (event.changedTouches && event.changedTouches[0].clientY) || null;
+      if (endY === null) return;
+      touchEndY = endY;
+      const deltaY = touchEndY - touchStartY;
+      if (Math.abs(deltaY) > 40) { // Minimum swipe distance
+        const direction = deltaY > 0 ? -1 : 1; // Swipe up = next, down = previous
+        triggerScroll(direction);
+      }
+      touchStartY = null;
+      touchEndY = null;
+    };
+
     window.addEventListener('wheel', handleWheel);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     // Handle resize
     const handleResize = () => {
@@ -179,6 +210,8 @@ const PlanetScene = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
       
       cancelAnimationFrame(animationFrameId);
       currentMount.removeChild(renderer.domElement);
