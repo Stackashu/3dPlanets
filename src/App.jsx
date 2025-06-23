@@ -1,5 +1,5 @@
 import React from 'react'
-import PlanetScene from './components/planetScene'
+import PlanetScene from './components/PlanetScene.jsx'
 
 const navStyles = {
   display: 'flex',
