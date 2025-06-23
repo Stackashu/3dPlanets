@@ -1,43 +1,27 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import gsap from "gsap";
 
 const PlanetScene = () => {
   const mountRef = useRef(null);
-  const [windowSize, setWindowSize] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight
-  });
 
   useEffect(() => {
-    // Handle resize
-    const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
-    };
-
-    window.addEventListener('resize', handleResize);
+    const currentMount = mountRef.current;
+    if (!currentMount) return;
 
     // Scene setup
     const scene = new THREE.Scene();
 
     // Camera setup
-    const camera = new THREE.PerspectiveCamera(40, windowSize.width / windowSize.height, 0.1, 1000);
-    camera.position.z = 8;
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // Camera position is set dynamically in handleResize
 
-
-   
-
-
-  
     // Renderer setup
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(windowSize.width, windowSize.height);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    mountRef.current.appendChild(renderer.domElement);
+    currentMount.appendChild(renderer.domElement);
    
     // HDRI Environment setup
     const hdriLoader = new RGBELoader();
@@ -55,16 +39,6 @@ const PlanetScene = () => {
       scene.add(directionalLight);
     });
 
-    const spheresMesh = [];
-
-    // Planet setup
-    const radius = windowSize.width < 768 ? 1 : 1.5; // Smaller radius for mobile
-    const widthSegments = 64;
-    const heightSegments = 64;
-    const orbitaRadius = windowSize.width < 768 ? 4 : 5.7; // Smaller orbit for mobile
-    const spheres = new THREE.Group();
-    const textures = ["/csilla/color.png","/earth/map.jpg","/venus/map.jpg","/volcanic/color.png"];
-
     // Create a large sphere for stars
     const starTexture = new THREE.TextureLoader().load("/stars.jpg");
     starTexture.colorSpace = THREE.SRGBColorSpace;
@@ -77,108 +51,151 @@ const PlanetScene = () => {
     });
     const starShpere = new THREE.Mesh(starGeometry, starMaterial);
     scene.add(starShpere);
+     
+    const spheresMesh = [];
+    const spheres = new THREE.Group();
+    const textures = ["/earth/map.jpg", "/csilla/color.png", "/venus/map.jpg", "/volcanic/color.png"];
     
-    for(let i = 0; i < 4; i++) {
-      const textureLoader = new THREE.TextureLoader();
+    const textureLoader = new THREE.TextureLoader();
+    const widthSegments = 64;
+    const heightSegments = 64;
+
+    for(let i = 0; i < textures.length ; i++) {
       const texture = textureLoader.load(textures[i]);
       texture.colorSpace = THREE.SRGBColorSpace;
 
-      const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+      // Create with a base radius of 1, will be scaled in handleResize
+      const geometry = new THREE.SphereGeometry(1, widthSegments, heightSegments);
       const material = new THREE.MeshStandardMaterial({map: texture});
-      var planet = new THREE.Mesh(geometry, material);
-      scene.add(planet);
+      const planet = new THREE.Mesh(geometry, material);
 
       spheresMesh.push(planet);
-     
-      const angle = (i/4) * (Math.PI * 2);
-      planet.position.x = orbitaRadius * Math.cos(angle);
-      planet.position.z = orbitaRadius * Math.sin(angle);
-    
       spheres.add(planet);
     }
 
-    spheres.position.y = windowSize.width < 768 ? 0 : -0.5; // Adjust vertical position for mobile
     spheres.rotation.x = 0.19;
     scene.add(spheres);
 
+    // Scroll event handling
+    let lastScrollTime = 0;
+    const scrollThrottleDelay = 1500;
+    let scrollCount = 0;
 
-       // Throttle function to limit scroll event handling
-   let lastScrollTime = 0;
-   const scrollThrottleDelay = 2000; // Adjust this value to control throttle delay
-   let scrollCount = 0;
+    const handleWheel = (event) => {
+      const currentTime = Date.now();
+      if (currentTime - lastScrollTime < scrollThrottleDelay) return;
 
-   const handleWheel = (event) => {
-     const currentTime = Date.now();
-     if (currentTime - lastScrollTime >= scrollThrottleDelay) {
-       // Your scroll handling logic here
-       const direction = event.deltaY > 0 ? "down" : "up";
-       scrollCount = (scrollCount + 1) % 4;
+      const isAnimating = gsap.isTweening(spheres.rotation) || gsap.isTweening(".heading");
+      if (isAnimating) return;
 
-       console.log(direction)
-       lastScrollTime = currentTime;
-       
-       const headings = document.querySelectorAll(".heading");
+      lastScrollTime = currentTime;
+      const direction = event.deltaY > 0 ? 1 : -1;
       
-        gsap.to(headings, {
-          duration: 1,
-          y: `-=${100}%`,
-          ease: "power2.inout"
-         })
-       
-          gsap.to(spheres.rotation, {
-            duration: 1,
-            y: `-=${Math.PI/2}`,
-            ease: "power2.inOut"
-          })
+      const nextScrollCount = scrollCount + direction;
 
-       if(scrollCount === 0){
-        gsap.to(headings, {
-          duration: 1,
-          y: `0`,
-          ease: "power2.inout"
-        })
-        
+      if (nextScrollCount < 0 || nextScrollCount >= textures.length) {
+        return;
+      }
       
-       }
-     }
-   };
-
-   window.addEventListener('wheel', handleWheel);
-   window.addEventListener('scroll', handleWheel);
-
-    // Update on resize
-    const handleSceneResize = () => {
-      camera.aspect = windowSize.width / windowSize.height;
-      camera.updateProjectionMatrix();
-      renderer.setSize(windowSize.width, windowSize.height);
+      scrollCount = nextScrollCount;
+      
+      const headings = document.querySelectorAll(".heading");
+      
+      gsap.to(headings, {
+        duration: 1,
+        y: `${scrollCount * -100}%`,
+        ease: "power2.inout"
+      });
+    
+      gsap.to(spheres.rotation, {
+        duration: 1.5,
+        y: scrollCount * -(Math.PI / 2),
+        ease: "power2.inOut"
+      });
     };
 
+    window.addEventListener('wheel', handleWheel);
+
+    // Handle resize
+    const handleResize = () => {
+      const width = window.innerWidth;
+      let radius, orbitaRadius;
+
+      if (width < 768) { // Mobile
+        radius = 1.3;
+        orbitaRadius = 4;
+        camera.position.z = 12;
+        camera.position.y = 2;
+        spheres.position.y = 0;
+      } else if (width < 1024) { // Tablet
+        radius = 1.5;
+        orbitaRadius = 5;
+        camera.position.z = 10;
+        camera.position.y = 1;
+        spheres.position.y = -0.2;
+      } else { // Desktop
+        radius = 1.5;
+        orbitaRadius = 5.7;
+        camera.position.z = 8;
+        camera.position.y = 0;
+        spheres.position.y = -0.5;
+      }
+
+      // Update planet scale and position
+      spheresMesh.forEach((planet, i) => {
+        planet.scale.set(radius, radius, radius);
+        const angle = (i / 4) * (Math.PI * 2);
+        planet.position.x = orbitaRadius * Math.cos(angle);
+        planet.position.z = orbitaRadius * Math.sin(angle);
+      });
+
+      // Update camera
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+      // Update renderer
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    };
+    
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial call to set responsive values
+
     const clock = new THREE.Clock();
+    let animationFrameId;
     // Animation loop
     const animate = () => {
-      requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
       for(let i = 0; i < spheresMesh.length; i++){
         const sphere = spheresMesh[i];
-        sphere.rotation.y  = clock.getElapsedTime() * 0.02;
+        sphere.rotation.y  = elapsedTime * 0.05;
       }
       renderer.render(scene, camera);
     };
     animate();
-
-    // Call resize handler when window size changes
-    handleSceneResize();
-    window.addEventListener('resize', handleSceneResize);
-
  
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('resize', handleSceneResize);
-    
-      mountRef.current?.removeChild(renderer.domElement);
+      window.removeEventListener('wheel', handleWheel);
+      
+      cancelAnimationFrame(animationFrameId);
+      currentMount.removeChild(renderer.domElement);
       renderer.dispose();
+
+      scene.traverse(object => {
+        if (object.geometry) object.geometry.dispose();
+        if (object.material) {
+          if (Array.isArray(object.material)) {
+            object.material.forEach(material => material.dispose());
+          } else {
+            object.material.dispose();
+          }
+        }
+      });
     };
-  }, [windowSize]); // Re-run effect when window size changes
+  }, []); // Run effect only once on mount
 
   return (
     <div
@@ -187,11 +204,11 @@ const PlanetScene = () => {
         width: "100%",
         height: "100vh",
         maxWidth: "100vw",
-        overflow: "hidden",
         position: "fixed",
+        zIndex:0,
         top: 0,
         left: 0,
-        touchAction: "none"
+        // touchAction: "none"
       }}
     ></div>
   );
