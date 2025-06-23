@@ -122,7 +122,7 @@ const PlanetScene = () => {
       let radius, orbitaRadius;
 
       if (width < 768) { // Mobile
-        radius = 1.3;
+        radius = 1.7;
         orbitaRadius = 4;
         camera.position.z = 12;
         camera.position.y = 2;
