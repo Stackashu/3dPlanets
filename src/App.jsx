@@ -3,31 +3,177 @@ import PlanetScene from './components/planetScene'
 
 const App = () => {
   return (
-    <div className='w-full h-screen overflow-hidden'>
-    {/* writing part in this div  */}
-      <div className='w-full h-screen absolute z-[10] top-0 left-0'>
-         <nav className='flex justify-between items-center m-8 pr-10'>
-                   <h1 className='text-white text-2xl font-bold pl-10 cursor-pointer'>Planets</h1>
+    <div
+      style={{
+        width: '100%',
+        height: '100vh',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      {/* writing part in this div  */}
+      <div
+        style={{
+          width: '100%',
+          height: '100vh',
+          position: 'absolute',
+          zIndex: 10,
+          top: 0,
+          left: 0,
+        }}
+      >
+        <nav
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            margin: '2rem',
+            paddingRight: '2.5rem',
+          }}
+        >
+          <h1
+            style={{
+              color: 'white',
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              paddingLeft: '2.5rem',
+              cursor: 'pointer',
+            }}
+          >
+            Planets
+          </h1>
 
-             <div className='flex gap-10'>
-                   <a href="#" className='text-white text-xl font-bold cursor-pointer'>Home</a>
-                   <a href="#" className='text-white text-xl font-bold cursor-pointer'>About</a>
-                   <a href="#" className='text-white text-xl font-bold cursor-pointer'>Contact</a>
-             </div>
+          <div
+            style={{
+              display: 'flex',
+              gap: '2.5rem',
+            }}
+          >
+            <a
+              href="#"
+              style={{
+                color: 'white',
+                fontSize: '1.25rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                textDecoration: 'none',
+              }}
+            >
+              Home
+            </a>
+            <a
+              href="#"
+              style={{
+                color: 'white',
+                fontSize: '1.25rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                textDecoration: 'none',
+              }}
+            >
+              About
+            </a>
+            <a
+              href="#"
+              style={{
+                color: 'white',
+                fontSize: '1.25rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                textDecoration: 'none',
+              }}
+            >
+              Contact
+            </a>
+          </div>
+        </nav>
 
-         </nav>
+        <div
+          style={{
+            display: 'flex',
+            // border:'1px solid white',
+            flexDirection: 'column',
+            alignItems: 'center',
+            position: 'absolute',
+            top: '5%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
+        >
+          <div
+            style={{
+              height: '9em',
+              overflow: 'hidden',
+              textAlign: 'center',
+            }}
+          >
+            <h1
+              className="heading"
+              style={{
+                color: 'white',
+                height: '100%',
+                // marginBottom:'2%',
+                // letterSpacing: '-0.05em',
+                fontSize: '8rem',
+                // "heading" class is not defined, so we keep it for now
+              }}
+            >
+              Earth
+            </h1>
+            <h1
+              className="heading"
+              style={{
+                color: 'white',
+                height: '100%',
+                // letterSpacing: '-0.05em',
+                fontSize: '8rem',
+              }}
+            >
+              Csilla
+            </h1>
+            <h1
+              className="heading"
+              style={{
+                color: 'white',
+                height: '100%',
+                // letterSpacing: '-0.05em',
+                fontSize: '8rem',
+              }}
+            >
+              Venus
+            </h1>
+            <h1
+              className="heading"
+              style={{
+                color: 'white',
+                height: '100%',
+                // letterSpacing: '-0.05em',
+                fontSize: '8rem',
+              }}
+            >
+              Volcanic
+            </h1>
+          </div>
 
-         <div className='flex flex-col items-center absolute top-[5%] left-1/2 -translate-x-1/2'>
-                     <div className='h-[9em] overflow-hidden text-center'>
-                          <h1 className='text-white h-full tracking-tight text-9xl heading'>Earth</h1>
-                          <h1 className='text-white h-full tracking-tight text-9xl heading'>Csilla</h1>
-                          <h1 className='text-white h-full tracking-tight text-9xl heading'>Venus</h1>
-                          <h1 className='text-white h-full tracking-tight text-9xl heading'>Volcanic</h1>
-                     </div>
-        
-          <p className='text-white text-[10px] font-bold'>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</p>
-         <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white to-transparent my-4"></div>
-         </div>
+          <p
+            style={{
+              color: 'white',
+              fontSize: '10px',
+              fontWeight: 'bold',
+            }}
+          >
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.
+          </p>
+          <div
+            style={{
+              width: '100%',
+              height: '1px',
+              marginTop: '1rem',
+              marginBottom: '1rem',
+              background: 'linear-gradient(to right, transparent, white, transparent)',
+            }}
+          ></div>
+        </div>
       </div>
       <PlanetScene/>
     </div>

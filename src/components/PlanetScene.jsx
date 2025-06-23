@@ -103,7 +103,7 @@ const PlanetScene = () => {
       
       gsap.to(headings, {
         duration: 1,
-        y: `${scrollCount * -100}%`,
+        y: `${scrollCount * -120}%`,
         ease: "power2.inout"
       });
     
@@ -202,9 +202,9 @@ const PlanetScene = () => {
       ref={mountRef}
       style={{
         width: "100%",
-        height: "100vh",
-        maxWidth: "100vw",
-        position: "fixed",
+        height: "100%",
+        // maxWidth: "100vw",
+        // position: "fixed",
         zIndex:0,
         top: 0,
         left: 0,
